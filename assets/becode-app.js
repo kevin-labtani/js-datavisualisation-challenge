@@ -31,6 +31,11 @@ div1.classList.add("canvas1");
 const table1 = document.getElementById("table1");
 table1.before(div1);
 
+// create select button and inject before our svg
+const button = document.createElement("select");
+button.setAttribute("id", "selectButton");
+div1.append(button);
+
 // create the svg
 const svg = d3
   .select(".canvas1")
@@ -51,19 +56,46 @@ const graph = svg
   .attr("height", graphHeight)
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
+// List of groups for selection button
+const group = [
+  "2002",
+  "2003",
+  "2004",
+  "2005",
+  "2006",
+  "2007",
+  "2008",
+  "2009",
+  "2010",
+  "2011",
+  "2012"
+];
+
+// add the options to the button
+d3.select("#selectButton")
+  .selectAll("myOptions")
+  .data(group)
+  .enter()
+  .append("option")
+  .text(d => d) // text showed in the menu
+  .attr("value", d => `data${d}`); // corresponding value returned by the button
+
+let dataYear = "data2002";
+// listen to selection
+button.addEventListener("change", e => {
+  dataYear = e.target.value;
+});
+
 // create axes groups
 const xAxisGroup = graph
   .append("g")
   .attr("transform", `translate(0, ${graphHeight})`);
 const yAxisGroup = graph.append("g");
 
-// join the data to rects
-const rects = graph.selectAll("rect").data(tableArr1);
-
 // create a y axis scale
 const y = d3
   .scaleLinear()
-  .domain([0, d3.max(tableArr1, d => d.data2002)])
+  .domain([0, d3.max(tableArr1, d => d[dataYear])])
   .range([graphHeight, 0]);
 
 // create band scale
@@ -74,35 +106,12 @@ const x = d3
   .paddingInner(0.2)
   .paddingOuter(0.2);
 
-// add attributes to rects already in the DOM
-rects
-  .attr("width", x.bandwidth)
-  .attr("height", d => graphHeight - y(d.data2002))
-  .attr("fill", "orange")
-  .attr("x", d => x(d.country))
-  .attr("y", d => y(d.data2002));
-
-// append the enter selection to DOM
-rects
-  .enter()
-  .append("rect")
-  .attr("width", x.bandwidth)
-  .attr("height", d => graphHeight - y(d.data2002))
-  .attr("fill", "grey")
-  .attr("x", d => x(d.country))
-  .attr("y", d => y(d.data2002));
-
-console.log(rects);
-
-// create and call the axes
+// create the axes
 const xAxis = d3.axisBottom(x);
 const yAxis = d3
   .axisLeft(y)
   .ticks(10)
   .tickFormat(d => d + " Infractions (milliers)");
-
-xAxisGroup.call(xAxis);
-yAxisGroup.call(yAxis);
 
 // rotate the text on bottom axis
 // by default it rotates around the middle of the text (the text anchor by default)
@@ -111,3 +120,39 @@ xAxisGroup
   .attr("transform", "rotate(-40)")
   .attr("text-anchor", "end")
   .attr("fill", "grey");
+
+const update = tableArr1 => {
+  // filter correct year
+  // tableArr1 = tableArr1.filter(el => el[] == );
+  // tableArr1 = tableArr1.filter(item => item[dataYear] == dataYear);
+  console.log(tableArr1);
+
+  // join the data to rects
+  const rects = graph.selectAll("rect").data(tableArr1);
+
+  // remove unneeded shapes with the exit selection
+  rects.exit().remove();
+
+  // add attributes to rects already in the DOM
+  rects
+    .attr("width", x.bandwidth)
+    .attr("height", d => graphHeight - y(d[dataYear]))
+    .attr("fill", "orange")
+    .attr("x", d => x(d.country))
+    .attr("y", d => y(d[dataYear]));
+
+  // append the enter selection to DOM
+  rects
+    .enter()
+    .append("rect")
+    .attr("width", x.bandwidth)
+    .attr("height", d => graphHeight - y(d[dataYear]))
+    .attr("fill", "grey")
+    .attr("x", d => x(d.country))
+    .attr("y", d => y(d[dataYear]));
+
+  // call the axes
+  xAxisGroup.call(xAxis);
+  yAxisGroup.call(yAxis);
+};
+update(tableArr1);
