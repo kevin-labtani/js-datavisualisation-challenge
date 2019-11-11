@@ -38,3 +38,21 @@ const svg = d3
   .attr("width", 800)
   .attr("height", 600);
 
+// create margins and dimentions
+// extra margins left and bot for our legends
+const margin = { top: 20, right: 20, bottom: 100, left: 130 };
+const graphWidth = 600 - margin.left - margin.right;
+const graphHeight = 600 - margin.top - margin.bottom;
+
+// create graph group inside the svg container
+const graph = svg
+  .append("g")
+  .attr("width", graphWidth)
+  .attr("height", graphHeight)
+  .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+// create axes groups
+const xAxisGroup = graph
+  .append("g")
+  .attr("transform", `translate(0, ${graphHeight})`);
+const yAxisGroup = graph.append("g");
