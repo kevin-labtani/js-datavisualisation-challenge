@@ -1,6 +1,7 @@
-// 1ST TABLE
+// 1ST GRAPH
+
 // country population object for data normalization
-// population for year 2007
+// population for year 2007 (approx)
 const population = {
   Belgique: 10580000,
   Bulgarie: 7530000,
@@ -47,7 +48,7 @@ for (let i = 2; i < table.rows.length; i++) {
   let PopNormalizer = population[table.rows[i].cells[1].innerHTML];
   tableArr1.push({
     country: table.rows[i].cells[1].innerHTML,
-    // need to convert from local comma separeted numbers to dot separated numbers before parsing
+    // need to convert from local comma separated numbers to dot separated numbers before parsing
     // normalizing by pop to get crime rate / person
     data2002:
       (parseFloat(table.rows[i].cells[2].innerHTML.replace(",", ".")) * 1000) /
@@ -122,6 +123,7 @@ const graph = svg
 const color = "#2873e6";
 const hoverColor = "#e67428";
 
+// selection button
 // List of groups for selection button
 const group = [
   "2002",
@@ -143,17 +145,17 @@ d3.select("#selectButton")
   .data(group)
   .enter()
   .append("option")
-  .text(d => d) // text showed in the menu
+  .text(d => d) // show text in the menu
   .attr("value", d => `data${d}`); // corresponding value returned by the button
-
-// set pageload default dataYear
-let dataYear = "data2002";
 
 // listen to selection
 button.addEventListener("change", e => {
   dataYear = e.target.value;
   update(tableArr1);
 });
+
+// set pageload default dataYear
+let dataYear = "data2002";
 
 // create axes groups
 const xAxisGroup = graph
@@ -207,11 +209,12 @@ const update = tableArr1 => {
   // // update domain for x axis
   // x.domain(tableArr1.map(item => item.country));
 
-  console.log(tableArr1);
+  // console.log(tableArr1);
+
   // join the data to rects
   const rects = graph.selectAll("rect").data(tableArr1);
 
-  // remove unneeded shapes with the exit selection
+  // remove unneeded rects with the exit selection
   rects.exit().remove();
 
   // add attributes to rects already in the DOM
@@ -225,7 +228,7 @@ const update = tableArr1 => {
     .enter()
     .append("rect")
     .attr("width", x.bandwidth)
-    .attr("height", d => graphHeight - y(d[dataYear] ? d[dataYear] : 0)) // starting condition
+    .attr("height", d => graphHeight - y(d[dataYear] ? d[dataYear] : 0)) // starting condition for transition // handling NaN in the array with ternary operator
     .attr("fill", color)
     .attr("x", d => x(d.country))
     .attr("y", d => y(d[dataYear] ? d[dataYear] : 0)) // starting condition
@@ -241,6 +244,7 @@ const update = tableArr1 => {
   xAxisGroup
     .call(xAxis)
     .selectAll("text")
+    .text(d => (d.includes("(") ? d.split("(")[0] : d))
     .attr("transform", "rotate(-40)")
     .attr("text-anchor", "end");
 
@@ -250,7 +254,8 @@ const update = tableArr1 => {
   graph
     .selectAll("rect")
     .on("mouseover", (d, i, n) => {
-      tip.show(d, n[i]); // n[i] is effectively "this"; those are the 2 args expected by show()
+      tip.show(d, n[i]);
+      // way to get arround "this" binding issue with arrow funct as "i" reference the index of the el in the array and "n" reference the array of el so n[i] is essentially "this"
       handleMouseOver(d, i, n);
     })
     .on("mouseout", (d, i, n) => {
