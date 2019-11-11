@@ -108,7 +108,7 @@ const svg = d3
 
 // create margins and dimentions
 // extra margins left and bot for our legends
-const margin = { top: 20, right: 20, bottom: 100, left: 130 };
+const margin = { top: 20, right: 20, bottom: 100, left: 135 };
 const graphWidth = 600 - margin.left - margin.right;
 const graphHeight = 600 - margin.top - margin.bottom;
 
@@ -160,9 +160,9 @@ let dataYear = "data2002";
 // create axes groups
 const xAxisGroup = graph
   .append("g")
+  .attr("class", "x-axis")
   .attr("transform", `translate(0, ${graphHeight})`);
-const yAxisGroup = graph.append("g");
-
+const yAxisGroup = graph.append("g").attr("class", "y-axis");
 // create a y axis scale
 const y = d3
   .scaleLinear()
@@ -174,7 +174,7 @@ const y = d3
 const x = d3
   .scaleBand()
   .domain(tableArr1.map(item => item.country))
-  .range([0, 670])
+  .range([0, 665])
   .paddingInner(0.2)
   .paddingOuter(0.2);
 
@@ -352,20 +352,20 @@ let dataYear2 = "data_2007_09";
 // create axes groups
 const xAxisGroup2 = graph2
   .append("g")
+  .attr("class", "x-axis")
   .attr("transform", `translate(0, ${graphHeight})`);
-const yAxisGroup2 = graph2.append("g");
-
+const yAxisGroup2 = graph2.append("g").attr("class", "y-axis");
 // create a y axis scale
 const y2 = d3
   .scaleLinear()
-  .domain([0, 320])
+  .domain([0, 350])
   .range([graphHeight, 0]);
 
 // create band scale
 const x2 = d3
   .scaleBand()
   .domain(tableArr2.map(item => item.country))
-  .range([0, 670])
+  .range([0, 665])
   .paddingInner(0.2)
   .paddingOuter(0.2);
 
@@ -374,7 +374,7 @@ const xAxis2 = d3.axisBottom(x2);
 const yAxis2 = d3
   .axisLeft(y2)
   .ticks(10)
-  .tickFormat(d => d + " Pop. carcérale/100.000");
+  .tickFormat(d => `Pop. carcérale: ${d}/100.000`);
 
 // tooltip setup
 // http://labratrevenge.com/d3-tip/
@@ -392,12 +392,10 @@ graph.call(tip2);
 
 // update function
 const update2 = tableArr2 => {
-  console.log(tableArr2);
+  // console.log(tableArr2);
 
   // join the data to rects
   const rects2 = graph2.selectAll("rect").data(tableArr2);
-  console.log(rects2);
-  console.log(dataYear2);
   // remove unneeded rects with the exit selection
   rects2.exit().remove();
 

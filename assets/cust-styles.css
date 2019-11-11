@@ -45,3 +45,15 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
+.x-axis path,
+.y-axis path,
+.x-axis line,
+.y-axis line {
+  stroke: #333;
+  stroke-width: 2;
+}
+
+/* .x-axis text,
+.y-axis text {
+} */
