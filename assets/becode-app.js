@@ -21,7 +21,6 @@ for (let i = 2; i < table.rows.length; i++) {
     data2012: parseFloat(table.rows[i].cells[12].innerHTML.replace(",", "."))
   });
 }
-console.log(tableArr1);
 
 // make a div to inject our svg
 const div1 = document.createElement("div");
@@ -56,6 +55,9 @@ const graph = svg
   .attr("height", graphHeight)
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
+// color for graph bars
+const color = "#2873e6";
+
 // List of groups for selection button
 const group = [
   "2002",
@@ -73,17 +75,20 @@ const group = [
 
 // add the options to the button
 d3.select("#selectButton")
-  .selectAll("myOptions")
+  .selectAll()
   .data(group)
   .enter()
   .append("option")
   .text(d => d) // text showed in the menu
   .attr("value", d => `data${d}`); // corresponding value returned by the button
 
+// set pageload default dataYear 
 let dataYear = "data2002";
+
 // listen to selection
 button.addEventListener("change", e => {
   dataYear = e.target.value;
+  update(tableArr1);
 });
 
 // create axes groups
@@ -95,7 +100,7 @@ const yAxisGroup = graph.append("g");
 // create a y axis scale
 const y = d3
   .scaleLinear()
-  .domain([0, d3.max(tableArr1, d => d[dataYear])])
+  .domain([0, d3.max(tableArr1, d => (d[dataYear] ? d[dataYear] : 0))]) // handling NaN
   .range([graphHeight, 0]);
 
 // create band scale
@@ -113,19 +118,12 @@ const yAxis = d3
   .ticks(10)
   .tickFormat(d => d + " Infractions (milliers)");
 
-// rotate the text on bottom axis
-// by default it rotates around the middle of the text (the text anchor by default)
-xAxisGroup
-  .selectAll("text")
-  .attr("transform", "rotate(-40)")
-  .attr("text-anchor", "end")
-  .attr("fill", "grey");
-
 const update = tableArr1 => {
-  // filter correct year
-  // tableArr1 = tableArr1.filter(el => el[] == );
-  // tableArr1 = tableArr1.filter(item => item[dataYear] == dataYear);
-  console.log(tableArr1);
+  // in case we want to opdate the domais later:
+  // // update domain for y axis
+  // y.domain([0, d3.max(tableArr1, d => (d[dataYear] ? d[dataYear] : 0))]); // handling NaN
+  // // update domain for x axis
+  // x.domain(tableArr1.map(item => item.country));
 
   // join the data to rects
   const rects = graph.selectAll("rect").data(tableArr1);
@@ -136,23 +134,34 @@ const update = tableArr1 => {
   // add attributes to rects already in the DOM
   rects
     .attr("width", x.bandwidth)
-    .attr("height", d => graphHeight - y(d[dataYear]))
-    .attr("fill", "orange")
-    .attr("x", d => x(d.country))
-    .attr("y", d => y(d[dataYear]));
+    .attr("fill", color)
+    .attr("x", d => x(d.country));
 
   // append the enter selection to DOM
   rects
     .enter()
     .append("rect")
     .attr("width", x.bandwidth)
-    .attr("height", d => graphHeight - y(d[dataYear]))
-    .attr("fill", "grey")
+    .attr("height", d => graphHeight - y(d[dataYear] ? d[dataYear] : 0)) // handling NaN
+    .attr("fill", color)
     .attr("x", d => x(d.country))
-    .attr("y", d => y(d[dataYear]));
+    .attr("y", d => y(d[dataYear] ? d[dataYear] : 0)) // handling NaN
+    .merge(rects)
+    .transition()
+    .duration(500)
+    .attr("y", d => y(d[dataYear] ? d[dataYear] : 0)) // ending condition
+    .attr("height", d => graphHeight - y(d[dataYear] ? d[dataYear] : 0)); // ending condition
 
-  // call the axes
-  xAxisGroup.call(xAxis);
+  // call the axis
+  // rotate the text on bottom axis
+  // by default it rotates around the middle of the text (the text anchor by default)
+  xAxisGroup
+    .call(xAxis)
+    .selectAll("text")
+    .attr("transform", "rotate(-40)")
+    .attr("text-anchor", "end");
+
   yAxisGroup.call(yAxis);
 };
+
 update(tableArr1);
