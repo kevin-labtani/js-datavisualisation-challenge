@@ -1,4 +1,4 @@
-// 1ST GRAPH
+// ------------- 1ST GRAPH -------------
 
 // country population object for data normalization
 // population for year 2007 (approx)
@@ -280,3 +280,23 @@ const handleMouseOut = (d, i, n) => {
     .duration(300)
     .attr("fill", color);
 };
+
+// ------------- 2ND GRAPH -------------
+
+// get data from the table
+let table2 = document.getElementById("table2");
+let tableArr2 = [];
+// skip 1st one as it's the div with the country numbers inside
+for (let i = 1; i < table2.rows.length; i++) {
+  tableArr2.push({
+    country: table2.rows[i].cells[1].innerHTML,
+    // need to convert from local comma separated numbers to dot separated numbers before parsing
+    data_2007_09: parseFloat(
+      table2.rows[i].cells[2].innerHTML.replace(",", ".")
+    ),
+    data_2010_12: parseFloat(
+      table2.rows[i].cells[3].innerHTML.replace(",", ".")
+    )
+  });
+}
+console.log(tableArr2);
