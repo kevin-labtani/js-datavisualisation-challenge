@@ -428,6 +428,7 @@ const update2 = tableArr2 => {
   xAxisGroup2
     .call(xAxis2)
     .selectAll("text")
+    // dirty but well....
     .text(d => (d.includes("(") ? d.split("(")[0] : d))
     .attr("transform", "rotate(-40)")
     .attr("text-anchor", "end");
