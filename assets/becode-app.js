@@ -1,9 +1,3 @@
-/* 
-// WRITE YOUR JAVASCRIPT BELOW THIS COMMENT 
-Your name : Kevin Labtani  
-Date :  11/11/2019
-Contact information : @kevinlabtani on Ryver 
-*/
 // 1ST TABLE
 
 // get data from the table
@@ -28,3 +22,19 @@ for (let i = 2; i < table.rows.length; i++) {
   });
 }
 console.log(tableArr1);
+
+// make a div to inject our svg
+const div1 = document.createElement("div");
+div1.classList.add("canvas1");
+
+// inject our div at the right spot in the DOM
+const table1 = document.getElementById("table1");
+table1.before(div1);
+
+// create the svg
+const svg = d3
+  .select(".canvas1")
+  .append("svg")
+  .attr("width", 800)
+  .attr("height", 600);
+
