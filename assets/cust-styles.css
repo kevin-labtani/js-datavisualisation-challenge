@@ -35,7 +35,8 @@
 }
 
 /* style select dropdown */
-#selectButton {
+#selectButton,
+#selectButton2 {
   background: #2873e6;
   padding: 6px;
   font-size: 1.2em;

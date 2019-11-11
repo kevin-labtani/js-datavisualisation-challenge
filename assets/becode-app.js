@@ -299,4 +299,153 @@ for (let i = 1; i < table2.rows.length; i++) {
     )
   });
 }
-console.log(tableArr2);
+
+// make a div to inject our svg
+const div2 = document.createElement("div");
+div2.classList.add("canvas2");
+
+// inject our div at the right spot in the DOM
+const table21 = document.getElementById("table2");
+table21.before(div2);
+
+// create select button and inject before our svg
+const button2 = document.createElement("select");
+button2.setAttribute("id", "selectButton2");
+div2.append(button2);
+
+// create the svg
+const svg2 = d3
+  .select(".canvas2")
+  .append("svg")
+  .attr("width", 800)
+  .attr("height", 600);
+
+// create graph group inside the svg container
+const graph2 = svg2
+  .append("g")
+  .attr("width", graphWidth)
+  .attr("height", graphHeight)
+  .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+// selection button
+// List of groups for selection button
+const group2 = ["2007_09", "2010_12"];
+
+// add the options to the button
+d3.select("#selectButton2")
+  .selectAll()
+  .data(group2)
+  .enter()
+  .append("option")
+  .text(d => d.split("_").join("-")) // show text in the menu
+  .attr("value", d => `data_${d}`); // corresponding value returned by the button
+
+// listen to selection
+button2.addEventListener("change", e => {
+  dataYear2 = e.target.value;
+  update2(tableArr2);
+});
+
+// set pageload default dataYear2
+let dataYear2 = "data_2007_09";
+
+// create axes groups
+const xAxisGroup2 = graph2
+  .append("g")
+  .attr("transform", `translate(0, ${graphHeight})`);
+const yAxisGroup2 = graph2.append("g");
+
+// create a y axis scale
+const y2 = d3
+  .scaleLinear()
+  .domain([0, 320])
+  .range([graphHeight, 0]);
+
+// create band scale
+const x2 = d3
+  .scaleBand()
+  .domain(tableArr2.map(item => item.country))
+  .range([0, 670])
+  .paddingInner(0.2)
+  .paddingOuter(0.2);
+
+// create the axes
+const xAxis2 = d3.axisBottom(x2);
+const yAxis2 = d3
+  .axisLeft(y2)
+  .ticks(10)
+  .tickFormat(d => d + " Pop. carcérale/100.000");
+
+// tooltip setup
+// http://labratrevenge.com/d3-tip/
+const tip2 = d3
+  .tip()
+  .attr("class", "d3-tip") // for styling
+  .html(d => {
+    let country = d.country.includes("(") ? d.country.split("(")[0] : d.country;
+    let content = `<div class="name">${country}</div>`;
+    content += `<div class="infractions">${d[dataYear2]} Pop. carcérale / 100.000 haitants</div>`;
+    return content;
+  });
+
+graph.call(tip2);
+
+// update function
+const update2 = tableArr2 => {
+  console.log(tableArr2);
+
+  // join the data to rects
+  const rects2 = graph2.selectAll("rect").data(tableArr2);
+  console.log(rects2);
+  console.log(dataYear2);
+  // remove unneeded rects with the exit selection
+  rects2.exit().remove();
+
+  // add attributes to rects already in the DOM
+  rects2
+    .attr("width", x2.bandwidth)
+    .attr("fill", color)
+    .attr("x", d => x2(d.country));
+
+  // append the enter selection to DOM
+  rects2
+    .enter()
+    .append("rect")
+    .attr("width", x2.bandwidth)
+    .attr("height", d => graphHeight - y2(d[dataYear2])) // starting condition for transition
+    .attr("fill", color)
+    .attr("x", d => x2(d.country))
+    .attr("y", d => y2(d[dataYear2])) // starting condition
+    .merge(rects2) // pass in the current selection and apply the rest to both the enter selection and the current selection already in the DOM
+    .transition()
+    .duration(500)
+    .attr("y", d => y2(d[dataYear2])) // ending condition for transition
+    .attr("height", d => graphHeight - y2(d[dataYear2])); // ending condition
+
+  // call the axis
+  // rotate the text on bottom axis
+  // by default it rotates around the middle of the text (the text anchor by default)
+  xAxisGroup2
+    .call(xAxis2)
+    .selectAll("text")
+    .text(d => (d.includes("(") ? d.split("(")[0] : d))
+    .attr("transform", "rotate(-40)")
+    .attr("text-anchor", "end");
+
+  yAxisGroup2.call(yAxis2);
+
+  // add events
+  graph2
+    .selectAll("rect")
+    .on("mouseover", (d, i, n) => {
+      tip2.show(d, n[i]);
+      // way to get arround "this" binding issue with arrow funct as "i" reference the index of the el in the array and "n" reference the array of el so n[i] is essentially "this"
+      handleMouseOver(d, i, n);
+    })
+    .on("mouseout", (d, i, n) => {
+      tip2.hide();
+      handleMouseOut(d, i, n);
+    });
+};
+
+update2(tableArr2);
