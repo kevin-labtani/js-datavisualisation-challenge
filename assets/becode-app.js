@@ -57,6 +57,7 @@ const graph = svg
 
 // color for graph bars
 const color = "#2873e6";
+const hoverColor = "#e67428";
 
 // List of groups for selection button
 const group = [
@@ -82,7 +83,7 @@ d3.select("#selectButton")
   .text(d => d) // text showed in the menu
   .attr("value", d => `data${d}`); // corresponding value returned by the button
 
-// set pageload default dataYear 
+// set pageload default dataYear
 let dataYear = "data2002";
 
 // listen to selection
@@ -118,13 +119,31 @@ const yAxis = d3
   .ticks(10)
   .tickFormat(d => d + " Infractions (milliers)");
 
+// tooltip setup
+// http://labratrevenge.com/d3-tip/
+const tip = d3
+  .tip()
+  .attr("class", "d3-tip") // for styling
+  .html(d => {
+    let country = d.country.includes("(") ? d.country.split("(")[0] : d.country;
+    let content = `<div class="name">${country}</div>`;
+    let infractions = d[dataYear].toString().split(".")[0];
+    content += `<div class="infractions">${infractions} thousand infractions</div>`;
+    return content;
+  });
+
+graph.call(tip);
+
+// update function
 const update = tableArr1 => {
-  // in case we want to opdate the domais later:
+  // in case we want to update the domains later:
   // // update domain for y axis
   // y.domain([0, d3.max(tableArr1, d => (d[dataYear] ? d[dataYear] : 0))]); // handling NaN
   // // update domain for x axis
   // x.domain(tableArr1.map(item => item.country));
 
+  //
+  console.log(tableArr1);
   // join the data to rects
   const rects = graph.selectAll("rect").data(tableArr1);
 
@@ -142,14 +161,14 @@ const update = tableArr1 => {
     .enter()
     .append("rect")
     .attr("width", x.bandwidth)
-    .attr("height", d => graphHeight - y(d[dataYear] ? d[dataYear] : 0)) // handling NaN
+    .attr("height", d => graphHeight - y(d[dataYear] ? d[dataYear] : 0)) // starting condition
     .attr("fill", color)
     .attr("x", d => x(d.country))
-    .attr("y", d => y(d[dataYear] ? d[dataYear] : 0)) // handling NaN
-    .merge(rects)
+    .attr("y", d => y(d[dataYear] ? d[dataYear] : 0)) // starting condition
+    .merge(rects) // pass in the current selection and apply the rest to both the enter selection and the current selection already in the DOM
     .transition()
     .duration(500)
-    .attr("y", d => y(d[dataYear] ? d[dataYear] : 0)) // ending condition
+    .attr("y", d => y(d[dataYear] ? d[dataYear] : 0)) // ending condition for transition
     .attr("height", d => graphHeight - y(d[dataYear] ? d[dataYear] : 0)); // ending condition
 
   // call the axis
@@ -162,6 +181,33 @@ const update = tableArr1 => {
     .attr("text-anchor", "end");
 
   yAxisGroup.call(yAxis);
+
+  // add events
+  graph
+    .selectAll("rect")
+    .on("mouseover", (d, i, n) => {
+      tip.show(d, n[i]); // n[i] is effectively "this"; those are the 2 args expected by show()
+      handleMouseOver(d, i, n);
+    })
+    .on("mouseout", (d, i, n) => {
+      tip.hide();
+      handleMouseOut(d, i, n);
+    });
 };
 
 update(tableArr1);
+
+// event handlers
+const handleMouseOver = (d, i, n) => {
+  d3.select(n[i]) // gets us the element we hover over
+    .transition("changeFill") // name the transitions so they don't bug out by interacting with one another
+    .duration(300)
+    .attr("fill", hoverColor);
+};
+
+const handleMouseOut = (d, i, n) => {
+  d3.select(n[i]) // gets us the element we hover over
+    .transition("changeFill")
+    .duration(300)
+    .attr("fill", color);
+};
