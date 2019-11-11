@@ -1,24 +1,87 @@
 // 1ST TABLE
+// country population object for data normalization
+// population for year 2007
+const population = {
+  Belgique: 10580000,
+  Bulgarie: 7530000,
+  "Rép.tchèque": 10680000,
+  Danemark: 5475000,
+  Allemagne: 82310000,
+  "Estonie(¹)": 1342000,
+  Irlande: 4340000,
+  "Grèce(²)": 11400000,
+  "Espagne(³)": 44780000,
+  France: 63600000,
+  Croatie: 4100000,
+  "Italie(⁴)": 58220000,
+  Chypre: 776333,
+  "Lettonie(⁵)": 1800000,
+  Lituanie: 2700000,
+  Luxembourg: 776333,
+  Hongrie: 10045401,
+  Malte: 407832,
+  "Pays­Bas(⁶)": 16360000,
+  Autriche: 8280000,
+  Pologne: 38130000,
+  Portugal: 10530000,
+  Roumanie: 21130000,
+  Slovénie: 2000000,
+  Slovaquie: 5398000,
+  "Finlande(⁷)": 5277000,
+  Suède: 9113000,
+  "Islande(⁸)": 312000,
+  Liechtenstein: 38547,
+  Norvège: 4800000,
+  "Suisse(⁷)": 7593494,
+  Monténégro: 620145,
+  ARYdeMacédoine: 2038514,
+  Serbie: 7382000,
+  "Turquie(⁹)": 69730000
+};
 
 // get data from the table
 let table = document.getElementById("table1");
 let tableArr1 = [];
 // skip 1st one as it's the div with the country numbers inside
 for (let i = 2; i < table.rows.length; i++) {
+  let PopNormalizer = population[table.rows[i].cells[1].innerHTML];
   tableArr1.push({
     country: table.rows[i].cells[1].innerHTML,
     // need to convert from local comma separeted numbers to dot separated numbers before parsing
-    data2002: parseFloat(table.rows[i].cells[2].innerHTML.replace(",", ".")),
-    data2003: parseFloat(table.rows[i].cells[3].innerHTML.replace(",", ".")),
-    data2004: parseFloat(table.rows[i].cells[4].innerHTML.replace(",", ".")),
-    data2005: parseFloat(table.rows[i].cells[5].innerHTML.replace(",", ".")),
-    data2006: parseFloat(table.rows[i].cells[6].innerHTML.replace(",", ".")),
-    data2007: parseFloat(table.rows[i].cells[7].innerHTML.replace(",", ".")),
-    data2008: parseFloat(table.rows[i].cells[8].innerHTML.replace(",", ".")),
-    data2009: parseFloat(table.rows[i].cells[9].innerHTML.replace(",", ".")),
-    data2010: parseFloat(table.rows[i].cells[10].innerHTML.replace(",", ".")),
-    data2011: parseFloat(table.rows[i].cells[11].innerHTML.replace(",", ".")),
-    data2012: parseFloat(table.rows[i].cells[12].innerHTML.replace(",", "."))
+    // normalizing by pop to get crime rate / person
+    data2002:
+      (parseFloat(table.rows[i].cells[2].innerHTML.replace(",", ".")) * 1000) /
+      PopNormalizer,
+    data2003:
+      (parseFloat(table.rows[i].cells[3].innerHTML.replace(",", ".")) * 1000) /
+      PopNormalizer,
+    data2004:
+      (parseFloat(table.rows[i].cells[4].innerHTML.replace(",", ".")) * 1000) /
+      PopNormalizer,
+    data2005:
+      (parseFloat(table.rows[i].cells[5].innerHTML.replace(",", ".")) * 1000) /
+      PopNormalizer,
+    data2006:
+      (parseFloat(table.rows[i].cells[6].innerHTML.replace(",", ".")) * 1000) /
+      PopNormalizer,
+    data2007:
+      (parseFloat(table.rows[i].cells[7].innerHTML.replace(",", ".")) * 1000) /
+      PopNormalizer,
+    data2008:
+      (parseFloat(table.rows[i].cells[8].innerHTML.replace(",", ".")) * 1000) /
+      PopNormalizer,
+    data2009:
+      (parseFloat(table.rows[i].cells[9].innerHTML.replace(",", ".")) * 1000) /
+      PopNormalizer,
+    data2010:
+      (parseFloat(table.rows[i].cells[10].innerHTML.replace(",", ".")) * 1000) /
+      PopNormalizer,
+    data2011:
+      (parseFloat(table.rows[i].cells[11].innerHTML.replace(",", ".")) * 1000) /
+      PopNormalizer,
+    data2012:
+      (parseFloat(table.rows[i].cells[12].innerHTML.replace(",", ".")) * 1000) /
+      PopNormalizer
   });
 }
 
@@ -101,7 +164,8 @@ const yAxisGroup = graph.append("g");
 // create a y axis scale
 const y = d3
   .scaleLinear()
-  .domain([0, d3.max(tableArr1, d => (d[dataYear] ? d[dataYear] : 0))]) // handling NaN
+  // .domain([0, d3.max(tableArr1, d => (d[dataYear] ? d[dataYear] : 0))])
+  .domain([0, 0.16])
   .range([graphHeight, 0]);
 
 // create band scale
@@ -117,7 +181,7 @@ const xAxis = d3.axisBottom(x);
 const yAxis = d3
   .axisLeft(y)
   .ticks(10)
-  .tickFormat(d => d + " Infractions (milliers)");
+  .tickFormat(d => d + " infractions per capita");
 
 // tooltip setup
 // http://labratrevenge.com/d3-tip/
@@ -127,8 +191,9 @@ const tip = d3
   .html(d => {
     let country = d.country.includes("(") ? d.country.split("(")[0] : d.country;
     let content = `<div class="name">${country}</div>`;
-    let infractions = d[dataYear].toString().split(".")[0];
-    content += `<div class="infractions">${infractions} thousand infractions</div>`;
+    content += `<div class="infractions">${d[dataYear].toFixed(
+      4
+    )} infractions per capita</div>`;
     return content;
   });
 
@@ -142,7 +207,6 @@ const update = tableArr1 => {
   // // update domain for x axis
   // x.domain(tableArr1.map(item => item.country));
 
-  //
   console.log(tableArr1);
   // join the data to rects
   const rects = graph.selectAll("rect").data(tableArr1);
