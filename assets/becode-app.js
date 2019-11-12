@@ -59,7 +59,7 @@ for (let i = 2; i < table.rows.length; i++) {
   tableArr1.push({
     country: table.rows[i].cells[1].innerHTML,
     // need to convert from local comma separated numbers to dot separated numbers before parsing
-    // normalizing by pop to get crime rate / person
+    // normalizing by pop to get crime rate per capita
     data2002:
       (parseFloat(table.rows[i].cells[2].innerHTML.replace(",", ".")) * 1000) /
       PopNormalizer,
@@ -174,7 +174,7 @@ const y = d3
 const x = d3
   .scaleBand()
   .domain(tableArr1.map(item => item.country))
-  .range([0, 665])
+  .range([0, 655])
   .paddingInner(0.2)
   .paddingOuter(0.2);
 
@@ -209,9 +209,11 @@ const update = tableArr1 => {
   const rects = graph.selectAll("rect").data(tableArr1);
 
   // remove unneeded rects with the exit selection
+  // nb: not necessary here
   rects.exit().remove();
 
   // add attributes to rects already in the DOM
+  // nb: not necessary here
   rects
     .attr("width", x.bandwidth)
     .attr("fill", color)
@@ -349,6 +351,7 @@ const xAxisGroup2 = graph2
   .attr("class", "x-axis")
   .attr("transform", `translate(0, ${graphHeight})`);
 const yAxisGroup2 = graph2.append("g").attr("class", "y-axis");
+
 // create a y axis scale
 const y2 = d3
   .scaleLinear()
@@ -359,7 +362,7 @@ const y2 = d3
 const x2 = d3
   .scaleBand()
   .domain(tableArr2.map(item => item.country))
-  .range([0, 665])
+  .range([0, 655])
   .paddingInner(0.2)
   .paddingOuter(0.2);
 
@@ -390,10 +393,13 @@ const update2 = tableArr2 => {
 
   // join the data to rects
   const rects2 = graph2.selectAll("rect").data(tableArr2);
+
   // remove unneeded rects with the exit selection
+  // nb: not necessary here
   rects2.exit().remove();
 
   // add attributes to rects already in the DOM
+  // nb: not necessary here
   rects2
     .attr("width", x2.bandwidth)
     .attr("fill", color)
@@ -416,7 +422,6 @@ const update2 = tableArr2 => {
 
   // call the axis
   // rotate the text on bottom axis
-  // by default it rotates around the middle of the text (the text anchor by default)
   xAxisGroup2
     .call(xAxis2)
     .selectAll("text")
@@ -446,7 +451,7 @@ update2(tableArr2);
 // ------------- 3rd GRAPH -------------
 const margin3 = { top: 20, right: 20, bottom: 20, left: 50 };
 const graphWidth3 = 800 - margin3.left - margin3.right;
-const graphHeight3 = 300 - margin3.top - margin3.bottom;
+const graphHeight3 = 320 - margin3.top - margin3.bottom;
 
 // make a div to inject our svg
 const div3 = document.createElement("div");
@@ -476,31 +481,36 @@ const xAxisGroup3 = graph3
   .attr("class", "x-axis")
   .attr("transform", `translate(0, ${graphHeight3})`);
 
+// create band scale
+const x3 = d3
+  .scaleBand()
+  .range([0, graphWidth3])
+  .paddingInner(0.2)
+  .paddingOuter(0.2);
+
+// create a y scale that gets us negative values
+const y3 = d3
+  .scaleLinear()
+  .domain([0, 20])
+  .range([0, graphHeight3]);
+
+// create the x axis
+const xAxis3 = d3.axisBottom(x3);
+
 // update function
 const update3 = data => {
-  // create band scale
-  const x3 = d3
-    .scaleBand()
-    .range([0, graphWidth3])
-    .paddingInner(0.2)
-    .paddingOuter(0.2)
-    .domain(data.map(item => item[0]));
-
-  // create a y scale that gets us negative values
-  const y3 = d3
-    .scaleLinear()
-    .domain([0, 20])
-    .range([0, graphHeight3]);
-
-  // create the axes
-  const xAxis3 = d3.axisBottom(x3);
+  // update domain for x axis
+  x3.domain(data.map(item => item[0]));
 
   // join the data to rects
   const rects3 = graph3.selectAll("rect").data(data);
+
   // remove unneeded rects with the exit selection
+  // nb: not necessary here
   rects3.exit().remove();
 
   // add attributes to rects already in the DOM
+  // nb: not necessary here
   rects3
     .attr("width", x3.bandwidth)
     .attr("fill", color)
@@ -517,17 +527,18 @@ const update3 = data => {
     .attr("y", d => graphHeight3 - Math.max(0, y3(d[1]))) // starting condition
     .merge(rects3) // pass in the current selection and apply the rest to both the enter selection and the current selection already in the DOM
     .transition()
-    .duration(500)
+    .duration(200)
     .attr("y", d => graphHeight3 - Math.max(0, y3(d[1]))) // ending condition for transition
     .attr("height", d => Math.abs(y3(d[1]))); // ending condition
 
-  // call the axes
+  // call the x axis
   xAxisGroup3.call(xAxis3);
 };
 
 // init data array
 let data = [];
 
+// chart update function
 function updateChart() {
   // get the data
   d3.json("https://inside.becode.org/api/v1/data/random.json").then(data => {
