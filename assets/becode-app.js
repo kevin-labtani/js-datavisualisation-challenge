@@ -445,7 +445,7 @@ update2(tableArr2);
 
 // ------------- 3rd GRAPH -------------
 const margin3 = { top: 20, right: 20, bottom: 20, left: 50 };
-const graphWidth3 = 600 - margin3.left - margin3.right;
+const graphWidth3 = 800 - margin3.left - margin3.right;
 const graphHeight3 = 300 - margin3.top - margin3.bottom;
 
 // make a div to inject our svg
@@ -488,7 +488,7 @@ const update3 = data => {
   // create band scale
   const x3 = d3
     .scaleBand()
-    .range([0, 730])
+    .range([0, graphWidth3])
     .paddingInner(0.2)
     .paddingOuter(0.2)
     .domain(data.map(item => item[0]));
@@ -541,6 +541,8 @@ const update3 = data => {
   // call the axes
   xAxisGroup3.call(xAxis3);
   yAxisGroup3.call(yAxis3);
+
+  // setInterval(update3(data), 1000);
 };
 
 // init data array
@@ -552,3 +554,12 @@ d3.json("https://inside.becode.org/api/v1/data/random.json").then(data => {
   console.log(data);
   update3(data);
 });
+
+// d3.json("https://inside.becode.org/api/v1/data/random.json").then(
+//   setInterval(data => {
+//     data = data;
+//     console.log(data);
+//     update3(data);
+//   }),
+//   1000
+// );
