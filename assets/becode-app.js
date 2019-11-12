@@ -475,13 +475,6 @@ const xAxisGroup3 = graph3
   .append("g")
   .attr("class", "x-axis")
   .attr("transform", `translate(0, ${graphHeight3})`);
-const yAxisGroup3 = graph3.append("g").attr("class", "y-axis");
-
-// create a y scale that gets us negative values
-const y3neg = d3
-  .scaleLinear()
-  .domain([0, 20])
-  .range([0, graphHeight3]);
 
 // update function
 const update3 = data => {
@@ -493,24 +486,14 @@ const update3 = data => {
     .paddingOuter(0.2)
     .domain(data.map(item => item[0]));
 
-  // create y scale
+  // create a y scale that gets us negative values
   const y3 = d3
     .scaleLinear()
-    .range([
-      graphHeight3 -
-        y3neg(
-          d3.min(data, item => item[1]),
-          0
-        )
-    ])
-    .domain([d3.min(data, item => item[1]), d3.max(data, item => item[1])]);
+    .domain([0, 20])
+    .range([0, graphHeight3]);
 
   // create the axes
   const xAxis3 = d3.axisBottom(x3);
-  const yAxis3 = d3
-    .axisLeft(y3)
-    .ticks(10)
-    .tickFormat(data, item => item[1]);
 
   // join the data to rects
   const rects3 = graph3.selectAll("rect").data(data);
@@ -528,38 +511,32 @@ const update3 = data => {
     .enter()
     .append("rect")
     .attr("width", x3.bandwidth)
-    .attr("height", d => Math.abs(y3neg(d[1]))) // starting condition for transition
+    .attr("height", d => Math.abs(y3(d[1]))) // starting condition for transition
     .attr("fill", color)
     .attr("x", d => x3(d[0]))
-    .attr("y", d => graphHeight3 - Math.max(0, y3neg(d[1]))) // starting condition
+    .attr("y", d => graphHeight3 - Math.max(0, y3(d[1]))) // starting condition
     .merge(rects3) // pass in the current selection and apply the rest to both the enter selection and the current selection already in the DOM
     .transition()
     .duration(500)
-    .attr("y", d => graphHeight3 - Math.max(0, y3neg(d[1]))) // ending condition for transition
-    .attr("height", d => Math.abs(y3neg(d[1]))); // ending condition
+    .attr("y", d => graphHeight3 - Math.max(0, y3(d[1]))) // ending condition for transition
+    .attr("height", d => Math.abs(y3(d[1]))); // ending condition
 
   // call the axes
   xAxisGroup3.call(xAxis3);
-  yAxisGroup3.call(yAxis3);
-
-  // setInterval(update3(data), 1000);
 };
 
 // init data array
 let data = [];
 
-// get the data
-d3.json("https://inside.becode.org/api/v1/data/random.json").then(data => {
-  data = data;
-  console.log(data);
-  update3(data);
-});
-
-// d3.json("https://inside.becode.org/api/v1/data/random.json").then(
-//   setInterval(data => {
-//     data = data;
-//     console.log(data);
-//     update3(data);
-//   }),
-//   1000
-// );
+function updateChart() {
+  // get the data
+  d3.json("https://inside.becode.org/api/v1/data/random.json").then(data => {
+    data = data;
+    // console.log(data);
+    update3(data);
+    setTimeout(function() {
+      updateChart();
+    }, 1000);
+  });
+}
+updateChart();
