@@ -1,3 +1,13 @@
+// common values to all graphs
+// create margins and dimentions
+// extra margins left and bot for our legends
+const margin = { top: 20, right: 20, bottom: 100, left: 135 };
+const graphWidth = 600 - margin.left - margin.right;
+const graphHeight = 600 - margin.top - margin.bottom;
+
+// color for graph bars
+const color = "#2873e6";
+const hoverColor = "#e67428";
 // ------------- 1ST GRAPH -------------
 
 // country population object for data normalization
@@ -106,22 +116,12 @@ const svg = d3
   .attr("width", 800)
   .attr("height", 600);
 
-// create margins and dimentions
-// extra margins left and bot for our legends
-const margin = { top: 20, right: 20, bottom: 100, left: 135 };
-const graphWidth = 600 - margin.left - margin.right;
-const graphHeight = 600 - margin.top - margin.bottom;
-
 // create graph group inside the svg container
 const graph = svg
   .append("g")
   .attr("width", graphWidth)
   .attr("height", graphHeight)
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
-
-// color for graph bars
-const color = "#2873e6";
-const hoverColor = "#e67428";
 
 // selection button
 // List of groups for selection button
@@ -474,32 +474,40 @@ const xAxisGroup3 = graph3
   .attr("transform", `translate(0, ${graphHeight})`);
 const yAxisGroup3 = graph3.append("g").attr("class", "y-axis");
 
-// create band scale
-const x3 = d3
-  .scaleBand()
-  .range([0, 665])
-  .paddingInner(0.2)
-  .paddingOuter(0.2);
-
-// create a y axis scale
-const y3 = d3
+// create a y scale that gets us negative values
+const y3neg = d3
   .scaleLinear()
-  .domain([-20, 20])
-  .range([graphHeight, 0]);
-
-// create the axes
-const xAxis3 = d3.axisBottom(x3);
-const yAxis3 = d3
-  .axisLeft(y3)
-  .ticks(10)
-  .tickFormat(d => d);
+  .domain([0, 20])
+  .range([0, graphHeight]);
 
 // update function
 const update3 = data => {
-  // update domain for x axis
-  x3.domain(data.map(item => item[0]));
-  // update the domain for y axis
-  // y3.domain([d3.min(data, item => item[1]), d3.max(data, item => item[1])]);
+  // create band scale
+  const x3 = d3
+    .scaleBand()
+    .range([0, 665])
+    .paddingInner(0.2)
+    .paddingOuter(0.2)
+    .domain(data.map(item => item[0]));
+
+  // create y scale
+  const y3 = d3
+    .scaleLinear()
+    .range([
+      graphHeight -
+        y3neg(
+          d3.min(data, item => item[1]),
+          0
+        )
+    ])
+    .domain([d3.min(data, item => item[1]), d3.max(data, item => item[1])]);
+
+  // create the axes
+  const xAxis3 = d3.axisBottom(x3);
+  const yAxis3 = d3
+    .axisLeft(y3)
+    .ticks(10)
+    .tickFormat(d => d);
 
   // join the data to rects
   const rects3 = graph3.selectAll("rect").data(data);
@@ -517,15 +525,15 @@ const update3 = data => {
     .enter()
     .append("rect")
     .attr("width", x3.bandwidth)
-    .attr("height", d => graphHeight - y3(d[1])) // starting condition for transition
+    .attr("height", d => Math.abs(y3neg(d[1]))) // starting condition for transition
     .attr("fill", color)
     .attr("x", d => x3(d[0]))
-    .attr("y", d => y3(d[1])) // starting condition
+    .attr("y", d => graphHeight - Math.max(0, y3neg(d[1]))) // starting condition
     .merge(rects3) // pass in the current selection and apply the rest to both the enter selection and the current selection already in the DOM
     .transition()
     .duration(500)
-    .attr("y", d => y3(d[1])) // ending condition for transition
-    .attr("height", d => graphHeight - y3(d[1])); // ending condition
+    .attr("y", d => graphHeight - Math.max(0, y3neg(d[1]))) // ending condition for transition
+    .attr("height", d => Math.abs(y3neg(d[1]))); // ending condition
 
   // call the axes
   xAxisGroup3.call(xAxis3);
