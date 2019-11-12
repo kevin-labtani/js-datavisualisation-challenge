@@ -1,4 +1,4 @@
-// common values to all graphs
+// common values to first 2 graphs
 // create margins and dimentions
 // extra margins left and bot for our legends
 const margin = { top: 20, right: 20, bottom: 100, left: 135 };
@@ -444,6 +444,9 @@ const update2 = tableArr2 => {
 update2(tableArr2);
 
 // ------------- 3rd GRAPH -------------
+const margin3 = { top: 20, right: 20, bottom: 20, left: 50 };
+const graphWidth3 = 600 - margin3.left - margin3.right;
+const graphHeight3 = 300 - margin3.top - margin3.bottom;
 
 // make a div to inject our svg
 const div3 = document.createElement("div");
@@ -463,29 +466,29 @@ const svg3 = d3
 // create graph group inside the svg container
 const graph3 = svg3
   .append("g")
-  .attr("width", graphWidth)
-  .attr("height", graphHeight)
-  .attr("transform", `translate(${margin.left}, ${margin.top})`);
+  .attr("width", graphWidth3)
+  .attr("height", graphHeight3)
+  .attr("transform", `translate(${margin3.left}, ${margin3.top})`);
 
 // create axes groups
 const xAxisGroup3 = graph3
   .append("g")
   .attr("class", "x-axis")
-  .attr("transform", `translate(0, ${graphHeight})`);
+  .attr("transform", `translate(0, ${graphHeight3})`);
 const yAxisGroup3 = graph3.append("g").attr("class", "y-axis");
 
 // create a y scale that gets us negative values
 const y3neg = d3
   .scaleLinear()
   .domain([0, 20])
-  .range([0, graphHeight]);
+  .range([0, graphHeight3]);
 
 // update function
 const update3 = data => {
   // create band scale
   const x3 = d3
     .scaleBand()
-    .range([0, 665])
+    .range([0, 730])
     .paddingInner(0.2)
     .paddingOuter(0.2)
     .domain(data.map(item => item[0]));
@@ -494,7 +497,7 @@ const update3 = data => {
   const y3 = d3
     .scaleLinear()
     .range([
-      graphHeight -
+      graphHeight3 -
         y3neg(
           d3.min(data, item => item[1]),
           0
@@ -507,7 +510,7 @@ const update3 = data => {
   const yAxis3 = d3
     .axisLeft(y3)
     .ticks(10)
-    .tickFormat(d => d);
+    .tickFormat(data, item => item[1]);
 
   // join the data to rects
   const rects3 = graph3.selectAll("rect").data(data);
@@ -528,11 +531,11 @@ const update3 = data => {
     .attr("height", d => Math.abs(y3neg(d[1]))) // starting condition for transition
     .attr("fill", color)
     .attr("x", d => x3(d[0]))
-    .attr("y", d => graphHeight - Math.max(0, y3neg(d[1]))) // starting condition
+    .attr("y", d => graphHeight3 - Math.max(0, y3neg(d[1]))) // starting condition
     .merge(rects3) // pass in the current selection and apply the rest to both the enter selection and the current selection already in the DOM
     .transition()
     .duration(500)
-    .attr("y", d => graphHeight - Math.max(0, y3neg(d[1]))) // ending condition for transition
+    .attr("y", d => graphHeight3 - Math.max(0, y3neg(d[1]))) // ending condition for transition
     .attr("height", d => Math.abs(y3neg(d[1]))); // ending condition
 
   // call the axes
