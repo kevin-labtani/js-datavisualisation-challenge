@@ -448,3 +448,25 @@ const update2 = tableArr2 => {
 };
 
 update2(tableArr2);
+
+// ------------- 3rd GRAPH -------------
+
+// get the data
+d3.json("https://inside.becode.org/api/v1/data/random.json").then(data => {
+  console.log(data);
+});
+
+// make a div to inject our svg
+const div3 = document.createElement("div");
+div3.classList.add("canvas3");
+
+// inject our div at the right spot in the DOM
+const title = document.getElementById("firstHeading");
+title.before(div3);
+
+// create the svg
+const svg3 = d3
+  .select(".canvas3")
+  .append("svg")
+  .attr("width", 800)
+  .attr("height", 600);
