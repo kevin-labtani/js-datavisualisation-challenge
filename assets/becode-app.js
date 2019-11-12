@@ -477,7 +477,6 @@ const yAxisGroup3 = graph3.append("g").attr("class", "y-axis");
 // create band scale
 const x3 = d3
   .scaleBand()
-  // .domain(data.map(item => item[0]))
   .range([0, 665])
   .paddingInner(0.2)
   .paddingOuter(0.2);
@@ -499,6 +498,8 @@ const yAxis3 = d3
 const update3 = data => {
   // update domain for x axis
   x3.domain(data.map(item => item[0]));
+  // update the domain for y axis
+  // y3.domain([d3.min(data, item => item[1]), d3.max(data, item => item[1])]);
 
   // join the data to rects
   const rects3 = graph3.selectAll("rect").data(data);
@@ -516,7 +517,7 @@ const update3 = data => {
     .enter()
     .append("rect")
     .attr("width", x3.bandwidth)
-    .attr("height", d => graphHeight - y2(d[1])) // starting condition for transition
+    .attr("height", d => graphHeight - y3(d[1])) // starting condition for transition
     .attr("fill", color)
     .attr("x", d => x3(d[0]))
     .attr("y", d => y3(d[1])) // starting condition
