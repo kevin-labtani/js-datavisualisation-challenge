@@ -203,12 +203,6 @@ graph.call(tip);
 
 // update function
 const update = tableArr1 => {
-  // in case we want to update the domains later:
-  // // update domain for y axis
-  // y.domain([0, d3.max(tableArr1, d => (d[dataYear] ? d[dataYear] : 0))]); // handling NaN
-  // // update domain for x axis
-  // x.domain(tableArr1.map(item => item.country));
-
   // console.log(tableArr1);
 
   // join the data to rects
@@ -451,11 +445,6 @@ update2(tableArr2);
 
 // ------------- 3rd GRAPH -------------
 
-// get the data
-d3.json("https://inside.becode.org/api/v1/data/random.json").then(data => {
-  console.log(data);
-});
-
 // make a div to inject our svg
 const div3 = document.createElement("div");
 div3.classList.add("canvas3");
@@ -470,3 +459,84 @@ const svg3 = d3
   .append("svg")
   .attr("width", 800)
   .attr("height", 600);
+
+// create graph group inside the svg container
+const graph3 = svg3
+  .append("g")
+  .attr("width", graphWidth)
+  .attr("height", graphHeight)
+  .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+// create axes groups
+const xAxisGroup3 = graph3
+  .append("g")
+  .attr("class", "x-axis")
+  .attr("transform", `translate(0, ${graphHeight})`);
+const yAxisGroup3 = graph3.append("g").attr("class", "y-axis");
+
+// create band scale
+const x3 = d3
+  .scaleBand()
+  // .domain(data.map(item => item[0]))
+  .range([0, 665])
+  .paddingInner(0.2)
+  .paddingOuter(0.2);
+
+// create a y axis scale
+const y3 = d3
+  .scaleLinear()
+  .domain([-20, 20])
+  .range([graphHeight, 0]);
+
+// create the axes
+const xAxis3 = d3.axisBottom(x3);
+const yAxis3 = d3
+  .axisLeft(y3)
+  .ticks(10)
+  .tickFormat(d => d);
+
+// update function
+const update3 = data => {
+  // update domain for x axis
+  x3.domain(data.map(item => item[0]));
+
+  // join the data to rects
+  const rects3 = graph3.selectAll("rect").data(data);
+  // remove unneeded rects with the exit selection
+  rects3.exit().remove();
+
+  // add attributes to rects already in the DOM
+  rects3
+    .attr("width", x3.bandwidth)
+    .attr("fill", color)
+    .attr("x", d => x3(d[0]));
+
+  // append the enter selection to DOM
+  rects3
+    .enter()
+    .append("rect")
+    .attr("width", x3.bandwidth)
+    .attr("height", d => graphHeight - y2(d[1])) // starting condition for transition
+    .attr("fill", color)
+    .attr("x", d => x3(d.country))
+    .attr("y", d => y3(d[1])) // starting condition
+    .merge(rects3) // pass in the current selection and apply the rest to both the enter selection and the current selection already in the DOM
+    .transition()
+    .duration(500)
+    .attr("y", d => y3(d[dataYear2])) // ending condition for transition
+    .attr("height", d => graphHeight - y3(d[1])); // ending condition
+
+  // call the axes
+  xAxisGroup3.call(xAxis3);
+  yAxisGroup3.call(yAxis3);
+};
+
+// init data array
+let data = [];
+
+// get the data
+d3.json("https://inside.becode.org/api/v1/data/random.json").then(data => {
+  data = data;
+  console.log(data);
+  update3(data);
+});
