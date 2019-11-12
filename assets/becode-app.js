@@ -193,9 +193,7 @@ const tip = d3
   .html(d => {
     let country = d.country.includes("(") ? d.country.split("(")[0] : d.country;
     let content = `<div class="name">${country}</div>`;
-    content += `<div class="infractions">${d[dataYear].toFixed(
-      4
-    )} infractions per capita</div>`;
+    content += `<div>${d[dataYear].toFixed(4)} infractions per capita</div>`;
     return content;
   });
 
@@ -381,7 +379,7 @@ const tip2 = d3
   .html(d => {
     let country = d.country.includes("(") ? d.country.split("(")[0] : d.country;
     let content = `<div class="name">${country}</div>`;
-    content += `<div class="infractions">${d[dataYear2]} Pop. carcérale / 100.000 haitants</div>`;
+    content += `<div>${d[dataYear2]} Pop. carcérale / 100.000 habitants</div>`;
     return content;
   });
 
@@ -497,6 +495,18 @@ const y3 = d3
 // create the x axis
 const xAxis3 = d3.axisBottom(x3);
 
+// tooltip setup
+// http://labratrevenge.com/d3-tip/
+const tip3 = d3
+  .tip()
+  .attr("class", "d3-tip") // for styling
+  .html(d => {
+    let content = `<div>${d[1]}</div>`;
+    return content;
+  });
+
+graph.call(tip3);
+
 // update function
 const update3 = data => {
   // update domain for x axis
@@ -533,6 +543,19 @@ const update3 = data => {
 
   // call the x axis
   xAxisGroup3.call(xAxis3);
+
+  // add events
+  graph3
+    .selectAll("rect")
+    .on("mouseover", (d, i, n) => {
+      tip3.show(d, n[i]);
+      // way to get arround "this" binding issue with arrow funct as "i" reference the index of the el in the array and "n" reference the array of el so n[i] is essentially "this"
+      handleMouseOver(d, i, n);
+    })
+    .on("mouseout", (d, i, n) => {
+      tip3.hide();
+      handleMouseOut(d, i, n);
+    });
 };
 
 // init data array
