@@ -518,12 +518,12 @@ const update3 = data => {
     .attr("width", x3.bandwidth)
     .attr("height", d => graphHeight - y2(d[1])) // starting condition for transition
     .attr("fill", color)
-    .attr("x", d => x3(d.country))
+    .attr("x", d => x3(d[0]))
     .attr("y", d => y3(d[1])) // starting condition
     .merge(rects3) // pass in the current selection and apply the rest to both the enter selection and the current selection already in the DOM
     .transition()
     .duration(500)
-    .attr("y", d => y3(d[dataYear2])) // ending condition for transition
+    .attr("y", d => y3(d[1])) // ending condition for transition
     .attr("height", d => graphHeight - y3(d[1])); // ending condition
 
   // call the axes
