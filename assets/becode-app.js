@@ -201,7 +201,7 @@ graph.call(tip);
 
 // update function
 const update = tableArr1 => {
-  // console.log(tableArr1);
+  console.log(tableArr1);
 
   // join the data to rects
   const rects = graph.selectAll("rect").data(tableArr1);
