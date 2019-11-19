@@ -1,8 +1,8 @@
-# Challenge: dataviz avec Javascript et d3.js
+# Challenge: dataviz avec JavaScript et d3.js
 
 ## Présentation du Projet
 
-Projet créé le 11 novembre 2019 par [**Kevin Labtani**](https://github.com/kevin-labtani) dans le cadre de la formation Web Developer donnée par [BeCode](https://www.becode.org/), dans le but de tester mes connaissances en JavaScript
+Projet créé le 11 novembre 2019 par [**Kevin Labtani**](https://github.com/kevin-labtani) dans le cadre de la formation Web Developer donnée par [BeCode](https://www.becode.org/), dans le but d'apprendre à utiliser d3.js
 
 Le projet est réalisé sur base des [instructions données](https://github.com/becodeorg/CRL-Woods-2.15/tree/master/Projects/javascript-challenge-solo)
 
